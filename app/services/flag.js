@@ -24,6 +24,9 @@ export default Service.extend({
     console.log(`snapshotFromRouteName "${routeName}"`);
     return snapshot;
   },
+  getFlag(key) {
+    return STORE.get(key);
+  },
   _processFlagsStuffForRouteInfos({ from, to }) {
     const getFlagsFromName = (routeName) => {
       const privateRouter = this.router._router._routerMicrolib;
@@ -115,6 +118,10 @@ export function getFlag(key) {
 export function updateFlag(key) {
   const newValue = STORE.get(key) + 1;
   STORE.set(key, newValue);
+}
+
+export function setFlag(key, value) {
+  STORE.set(key, value);
 }
 
 const PARENT = '.parent';
