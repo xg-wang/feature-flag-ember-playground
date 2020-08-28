@@ -27,6 +27,9 @@ export default Service.extend({
   getFlag(key) {
     return STORE.get(key);
   },
+  getFlagIsEnabled(key) {
+    return getFlagIsEnabled(key);
+  },
   _processFlagsStuffForRouteInfos({ from, to }) {
     const getFlagsFromName = (routeName) => {
       const privateRouter = this.router._router._routerMicrolib;
@@ -112,7 +115,11 @@ const STORE = new Map(
 );
 
 export function getFlag(key) {
-  return STORE.get(key);
+  return STORE.get(key) || 'control';
+}
+
+export function getFlagIsEnabled(key) {
+  return getFlag(key) !== 'control';
 }
 
 export function updateFlag(key) {
