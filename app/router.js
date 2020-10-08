@@ -12,4 +12,5 @@ Router.map(function () {
     this.route('education');
   });
   this.mount('super-blog');
+  this.mount('about');
 });

@@ -7,14 +7,18 @@
   <h2>Router</h2>
   <ul>
     <li><LinkTo @route="profile" @model="1">Profile 1</LinkTo></li>
-    <li><LinkTo @route="profile.connections" @model="1">Profile 1 Connections</LinkTo></li>
-    <li><LinkTo @route="profile.education" @model="1">Profile 1 Education</LinkTo></li>
+    <li><LinkTo @route="profile.connections" @model="1">Profile 1 | Connections</LinkTo></li>
+    <li><LinkTo @route="profile.education" @model="1">Profile 1 | Education</LinkTo></li>
     <li><LinkTo @route="profile" @model="2">Profile 2</LinkTo></li>
-    <li><LinkTo @route="profile.connections" @model="2">Profile 2 Connections</LinkTo></li>
-    <li><LinkTo @route="profile.education" @model="2">Profile 2 Education</LinkTo></li>
+    <li><LinkTo @route="profile.connections" @model="2">Profile 2 | Connections</LinkTo></li>
+    <li><LinkTo @route="profile.education" @model="2">Profile 2 | Education</LinkTo></li>
     <li><LinkTo @route="super-blog">Super Blog</LinkTo></li>
-    <li><LinkTo @route="super-blog.post" @model="1">Super Blog Post 1</LinkTo></li>
-    <li><LinkTo @route="super-blog.post" @model="2">Super Blog Post 2</LinkTo></li>
+    <li><LinkTo @route="super-blog.post" @model="1">Super Blog | Post 1</LinkTo></li>
+    <li><LinkTo @route="super-blog.post" @model="2">Super Blog | Post 2</LinkTo></li>
+    <li><LinkTo @route="about">About</LinkTo></li>
+    <li><LinkTo @route="about.contact" @model="linkedin">About | Contact LinkedIn</LinkTo></li>
+    <li><LinkTo @route="about.contact" @model="github">About | Contact Github</LinkTo></li>
+    <li><LinkTo @route="about.contact" @model="twitter">About | Contact Twitter</LinkTo></li>
   </ul>
 </section>
 
