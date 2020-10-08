@@ -1,11 +1,14 @@
 import Controller from '@ember/controller';
+import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
 
 export default class EducationController extends Controller {
-  oldToggle = false
+  @tracked
+  oldCount = 0;
 
   @action
-  oldEducationToggle() {
-    this.toggleProperty('oldToggle');
+  incrementOldCount() {
+    this.oldCount += 1;
   }
 }
+

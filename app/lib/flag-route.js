@@ -2,7 +2,7 @@ const ROUTE_LIX_ENABLED_KEY = '__route_lix_is_enabled';
 
 function generateRouteHandler(owner, key, treatmentRouteName) {
   const treatmentRoute = owner.lookup(`route:${treatmentRouteName}`);
-  const flagService = owner.lookup('service:flags');
+  const flagService = owner.lookup('service:flag');
   return {
     set(target, prop, value) {
       const flagIsControl = !Reflect.get(target, ROUTE_LIX_ENABLED_KEY);
@@ -36,8 +36,9 @@ export function setupFlaggedRoute(ControlRouteClass, { flagKey, enabledRouteName
   }
   return class FlagRoute extends ControlRouteClass {
     constructor(owner) {
+      super(...arguments);
       return new Proxy(
-        super(...arguments),
+        this,
         generateRouteHandler(owner, flagKey, enabledRouteName)
       );
     }
