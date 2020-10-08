@@ -1,7 +1,10 @@
 <h1>Feature Flag Test App</h1>
-<AllFlags/>
+<section>
+  <AllFlags/>
+</section>
 
 <section>
+  <h2>Router</h2>
   <ul>
     <li><LinkTo @route="profile" @model="1">Profile 1</LinkTo></li>
     <li><LinkTo @route="profile.connections" @model="1">Profile 1 Connections</LinkTo></li>
@@ -9,10 +12,16 @@
     <li><LinkTo @route="profile" @model="2">Profile 2</LinkTo></li>
     <li><LinkTo @route="profile.connections" @model="2">Profile 2 Connections</LinkTo></li>
     <li><LinkTo @route="profile.education" @model="2">Profile 2 Education</LinkTo></li>
+    <li><LinkTo @route="super-blog">Super Blog</LinkTo></li>
+    <li><LinkTo @route="super-blog.post" @model="1">Super Blog Post 1</LinkTo></li>
+    <li><LinkTo @route="super-blog.post" @model="2">Super Blog Post 2</LinkTo></li>
   </ul>
 </section>
 
-<p>@model.flag: {{evaluate-flag @model.flags "application"}}</p>
+<section>
+  <h2>Application model</h2>
+  <p>@model.flag: {{evaluate-flag @model.flags "application"}}</p>
+</section>
 
 <main>
   {{outlet}}
