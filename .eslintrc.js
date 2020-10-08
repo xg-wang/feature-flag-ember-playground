@@ -15,7 +15,9 @@ module.exports = {
   env: {
     browser: true,
   },
-  rules: {},
+  rules: {
+    "no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+  },
   overrides: [
     // node files
     {
