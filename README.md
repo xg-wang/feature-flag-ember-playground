@@ -23,5 +23,7 @@ export default setupFlaggedRoute(ControlClass, {
 
 The given invocation assumes that `app/routes/myfeature/new-route.js` and `app/templates/myfeature/new-route.hbs` both exist.
 
-### TODOO
-  * Figure out how controllers will work
+## Embroider compatibility
+
+By default this app is built with Embroider route code split enabled, `env.CLASSIC` can disable Embroider.
+
