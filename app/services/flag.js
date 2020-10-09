@@ -1,13 +1,10 @@
 import Service, { inject as service } from '@ember/service';
+import { all } from 'rsvp';
 
 export default Service.extend({
   router: service('router'),
   init() {
     this._super(...arguments);
-    // TODO: need to wait promise to work with lazy engines
-    this.router.on('routeWillChange', ({ from, to }) => {
-      this._processFlagsStuffForRouteInfos({ from, to });
-    });
     this.ROUTE_FLAGS_MAP = new Map([
       [
         FLAGS,
@@ -17,6 +14,12 @@ export default Service.extend({
         ]),
       ],
     ]);
+    this.router.on('routeWillChange', ({ from, to, routeInfos }) => {
+      let routePromises = routeInfos.map((info) => info.routePromise);
+      all(routePromises).then(() => {
+        this._processFlagsStuffForRouteInfos({ from, to });
+      });
+    });
   },
   snapshotFromRouteName(routeName) {
     const privateRouter = this.router._router._routerMicrolib;
