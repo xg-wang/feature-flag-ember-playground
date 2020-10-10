@@ -30,6 +30,6 @@ module.exports = function(defaults) {
     staticAddonTrees: false,
     staticHelpers: true,
     staticComponents: true,
-    splitAtRoutes: []
+    splitAtRoutes: ['profile', 'profile.connections']
   });
 };
