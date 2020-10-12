@@ -2,7 +2,7 @@ import Route from '@ember/routing/route';
 import { flag } from '../decorators/flag';
 
 export default class ApplicationRoute extends Route {
-  flags = flag(['application']);
+  @flag(['application']) flags;
   async model() {
     console.log('model() application');
     return {
