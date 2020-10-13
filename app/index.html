@@ -1,26 +1,33 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>FeatureFlagEmberPlayground</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <!-- {a:0,b:0,application:0} -->
-    <meta name="feature-flags" content="%7B%22a%22:0,%22b%22:0,%22education%22:%22enabled%22,%22application%22:0%7D">
+    <meta name="description" content="" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- {"flags":{"a":0,"b":0,"education":"enabled","application":0,"new.about":"enabled","new.super-blog":"enabled"},"routingFlags":{"mountPoints":{"about":{"key":"new.about","enabledEngine":"new-about"},"super-blog":{"key":"new.super-blog","enabledEngine":"new-super-blog"}}}} -->
+    <meta
+      name="feature-flags"
+      content="%7B%22flags%22:%7B%22a%22:0,%22b%22:0,%22education%22:%22enabled%22,%22application%22:0,%22new.about%22:%22enabled%22,%22new.super-blog%22:%22enabled%22%7D,%22routingFlags%22:%7B%22mountPoints%22:%7B%22about%22:%7B%22key%22:%22new.about%22,%22enabledEngine%22:%22new-about%22%7D,%22super-blog%22:%7B%22key%22:%22new.super-blog%22,%22enabledEngine%22:%22new-super-blog%22%7D%7D%7D%7D"
+    />
 
     {{content-for "head"}}
 
-    <link integrity="" rel="stylesheet" href="{{rootURL}}assets/vendor.css">
-    <link integrity="" rel="stylesheet" href="{{rootURL}}assets/feature-flag-ember-playground.css">
+    <link integrity="" rel="stylesheet" href="{{ rootURL }}assets/vendor.css" />
+    <link
+      integrity=""
+      rel="stylesheet"
+      href="{{ rootURL }}assets/feature-flag-ember-playground.css"
+    />
 
     {{content-for "head-footer"}}
   </head>
   <body>
     {{content-for "body"}}
 
-    <script src="{{rootURL}}assets/vendor.js"></script>
-    <script src="{{rootURL}}assets/feature-flag-ember-playground.js"></script>
+    <script src="{{ rootURL }}assets/vendor.js"></script>
+    <script src="{{ rootURL }}assets/feature-flag-ember-playground.js"></script>
 
     {{content-for "body-footer"}}
   </body>

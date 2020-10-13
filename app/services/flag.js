@@ -113,7 +113,7 @@ const STORE = new Map(
   Object.entries(
     JSON.parse(
       decodeURI(document.querySelector('meta[name=feature-flags]').content)
-    )
+    ).flags
   )
 );
 
