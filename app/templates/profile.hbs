@@ -1,5 +1,6 @@
 <h3>Profile {{@model.profile_id}}</h3>
 <p>a: {{evaluate-flag @model.flags "a"}}</p>
 <FlagReader />
+<button type="button" {{on "click" this.refreshRoute}}>Refresh profile {{@model.profile_id}} route</button>
 
 {{outlet}}
