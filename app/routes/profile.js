@@ -1,4 +1,5 @@
 import Route from '@ember/routing/route';
+import { action } from '@ember/object';
 import { flag } from '../decorators/flag';
 
 export default class ProfileRoute extends Route {
@@ -9,5 +10,11 @@ export default class ProfileRoute extends Route {
       profile_id,
       flags: await this.flags.snapshot(),
     };
+  }
+
+  @action
+  refreshOnRoute() {
+    console.log('profile route refresh..')
+    this.refresh();
   }
 }
