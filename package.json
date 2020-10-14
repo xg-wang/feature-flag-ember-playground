@@ -65,7 +65,9 @@
   "ember-addon": {
     "paths": [
       "lib/about",
-      "lib/super-blog"
+      "lib/new-about",
+      "lib/super-blog",
+      "lib/new-super-blog"
     ]
   }
 }
