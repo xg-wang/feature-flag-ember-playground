@@ -15,12 +15,15 @@ export default Service.extend({
       ],
     ]);
     this.router.on('routeWillChange', ({ from, to, routeInfos }) => {
+      const fromList = createList(from);
+      const toList = createList(to);
+      const { pivot } = diffRoutes({ fromList, toList });
       let routePromises = routeInfos.map((info) => info.routePromise);
-      all(routePromises).then(() => {
-        this._processFlagsStuffForRouteInfos({ from, to });
-      });
+      // application -> profile -> connections
+      updateFlagsMapForRouteHierarchy(this.ROUTE_FLAGS_MAP, routePromises, pivot);
     });
   },
+  // when get-route-info lands we can drop private API usage
   snapshotFromRouteName(routeName) {
     const privateRouter = this.router._router._routerMicrolib;
     const snapshot = privateRouter.getRoute(routeName).flags._snapshotSync();
@@ -33,66 +36,57 @@ export default Service.extend({
   getFlagIsEnabled(key) {
     return getFlagIsEnabled(key);
   },
-  _processFlagsStuffForRouteInfos({ from, to }) {
-    const getFlagsFromName = (routeName) => {
-      const privateRouter = this.router._router._routerMicrolib;
-      return privateRouter.getRoute(routeName).flags;
-    };
-    // application -> profile -> connections
-    const toList = createList(to);
-    initFlagsMapForRouteHierarchy(
-      this.ROUTE_FLAGS_MAP,
-      getFlagsFromName,
-      toList
-    );
-    // update flags for routes that are below pivot
-    const fromList = createList(from);
-    const { pivot } = diffRoutes({ fromList, toList });
-    for (let i = pivot; i < toList.length; i++) {
-      const flags = getFlagsFromName(toList[i].name);
-      if (!flags) continue;
-      const ptr = FLAGS_TO_MAP.get(flags);
-      for (const v of ptr.get(FLAGS).get(TOP_LEVEL_FLAGS).values()) {
-        v.update();
-      }
-    }
-  },
 });
 
-function initFlagsMapForRouteHierarchy(
+async function updateFlagsMapForRouteHierarchy(
   routeFlagsMap,
-  getFlagsFromName,
-  toList
+  routePromises,
+  pivot
 ) {
   // init flags map for each route hierarchy
   let ptr = routeFlagsMap;
-  for (const { name, localName } of toList) {
-    if (!ptr.has(localName)) {
-      ptr.set(localName, new Map([[PARENT, ptr]]));
-    }
-    ptr = ptr.get(localName);
-    // TODO: figure out if we can use buildRouteInfoMetadata
-    const flags = getFlagsFromName(name);
-    // flags.keys: ['a', 'b']
-    if (flags && !ptr.has(FLAGS)) {
-      const parentFlagsMap = ptr.get(PARENT).get(FLAGS);
-      const topLevelFlagsEntries = flags.keys
-        .filter(
-          (f) =>
-            !parentFlagsMap.get(TOP_LEVEL_FLAGS).has(f) &&
-            !parentFlagsMap.get(INHERIT_FLAGS).has(f)
-        )
-        .map((f) => [f, new FlagRef(f)]);
-      const inheritFlagsEntries = Array.from(
-        parentFlagsMap.get(INHERIT_FLAGS).entries()
-      ).concat(Array.from(parentFlagsMap.get(TOP_LEVEL_FLAGS).entries()));
-      const flagsMapForThisLevel = new Map([
-        [TOP_LEVEL_FLAGS, new Map(topLevelFlagsEntries)],
-        [INHERIT_FLAGS, new Map(inheritFlagsEntries)],
-      ]);
-      ptr.set(FLAGS, flagsMapForThisLevel);
-      FLAGS_TO_MAP.set(flags, ptr);
-    }
+  for (let i = 0; i < routePromises.length; i++) {
+    // TODO: this is relying on routerjs resolves model in a later micro stack, we can win the race :)
+    // a more reliable approach is to have snapshot wait.
+    await routePromises[i].then((route) => {
+      console.log(`[async route resolve] resolved ${route.fullRouteName}`);
+      const localName = routeLocalName(route.fullRouteName);
+      if (!ptr.has(localName)) {
+        ptr.set(localName, new Map([[PARENT, ptr]]));
+      }
+      ptr = ptr.get(localName);
+      // TODO: figure out if we can use buildRouteInfoMetadata
+      const { flags } = route;
+      // flags.keys: ['a', 'b']
+      if (flags && !ptr.has(FLAGS)) {
+        const parentFlagsMap = ptr.get(PARENT).get(FLAGS);
+        const topLevelFlagsEntries = flags.keys
+          .filter(
+            (f) =>
+              !parentFlagsMap.get(TOP_LEVEL_FLAGS).has(f) &&
+              !parentFlagsMap.get(INHERIT_FLAGS).has(f)
+          )
+          .map((f) => [f, new FlagRef(f)]);
+        const inheritFlagsEntries = Array.from(
+          parentFlagsMap.get(INHERIT_FLAGS).entries()
+        ).concat(Array.from(parentFlagsMap.get(TOP_LEVEL_FLAGS).entries()));
+        const flagsMapForThisLevel = new Map([
+          [TOP_LEVEL_FLAGS, new Map(topLevelFlagsEntries)],
+          [INHERIT_FLAGS, new Map(inheritFlagsEntries)],
+        ]);
+        ptr.set(FLAGS, flagsMapForThisLevel);
+        FLAGS_TO_MAP.set(flags, ptr);
+      }
+      // update flags for routes that are below pivot
+      if (i >= pivot) {
+        if (flags) {
+          const ptr = FLAGS_TO_MAP.get(flags);
+          for (const v of ptr.get(FLAGS).get(TOP_LEVEL_FLAGS).values()) {
+            v.update();
+          }
+        }
+      }
+    });
   }
 }
 
@@ -198,6 +192,11 @@ function diffRoutes({ fromList, toList }) {
       return { pivot: i };
   }
   return { pivot: toList.length };
+}
+
+function routeLocalName(routeName) {
+  let parts = routeName.split('.');
+  return parts[parts.length - 1];
 }
 
 function objectsMatch(obj1, obj2) {
