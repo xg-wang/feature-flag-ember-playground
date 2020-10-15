@@ -1,12 +1,10 @@
 import EmberRouter from '@embroider/router';
 import config from './config/environment';
+import { FeatureFlags } from './lib/flag-cache';
 
 function mountFlagedEngine(/*this: DSLImpl*/engineMountPoint) {
-  const flagConfig = JSON.parse(
-    decodeURI(document.querySelector('meta[name=feature-flags]').content)
-  );
-  const engineConfig = flagConfig.routingFlags.mountPoints[engineMountPoint];
-  if (flagConfig.flags[engineConfig.key] === 'enabled') {
+  const engineConfig = FeatureFlags.routingFlags.mountPoints[engineMountPoint];
+  if (FeatureFlags.flags[engineConfig.key] === 'enabled') {
     this.mount(engineConfig.enabledEngine, { as: engineMountPoint });
   } else {
     this.mount(engineMountPoint);
