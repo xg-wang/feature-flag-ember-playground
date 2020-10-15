@@ -5,32 +5,43 @@ function generateRouteHandler(owner, key, treatmentRouteName) {
   const flagService = owner.lookup('service:flag');
   return {
     set(target, prop, value) {
-      const flagIsControl = !Reflect.get(target, ROUTE_LIX_ENABLED_KEY);
+      const flagIsEnabled = Reflect.get(target, ROUTE_LIX_ENABLED_KEY);
       if (prop === 'controller') {
         // Set the other controller too, because _internalReset assumes controller is set once route is setup
-        if (flagIsControl) {
-          Reflect.set(treatmentRoute, prop, owner.lookup(`controller:${treatmentRouteName}`));
+        if (flagIsEnabled) {
+          Reflect.set(
+            target,
+            prop,
+            owner.lookup(`controller:${Reflect.get(target, 'routeName')}`)
+          );
         } else {
-          Reflect.set(target, prop, owner.lookup(`controller:${Reflect.get(target, 'routeName')}`));
+          Reflect.set(
+            treatmentRoute,
+            prop,
+            owner.lookup(`controller:${treatmentRouteName}`)
+          );
         }
       }
-      return Reflect.set(flagIsControl ? target : treatmentRoute, prop, value);
+      return Reflect.set(flagIsEnabled ? treatmentRoute : target, prop, value);
     },
     get(target, prop, _receiver) {
-      if (prop === 'beforeModel') {
-        const isEnabled = flagService.getFlagIsEnabled(key);
-        Reflect.set(target, ROUTE_LIX_ENABLED_KEY, isEnabled);
+      let flagIsEnabled = Reflect.get(target, ROUTE_LIX_ENABLED_KEY);
+      if (typeof flagIsEnabled === 'undefined') {
+        flagIsEnabled = flagService.getFlagIsEnabled(key);
+        Reflect.set(target, ROUTE_LIX_ENABLED_KEY, flagIsEnabled);
       }
-      const flagIsControl = !Reflect.get(target, ROUTE_LIX_ENABLED_KEY);
       if (prop === 'routeName') {
-        return flagIsControl ? Reflect.get(target, prop) : treatmentRouteName;
+        return flagIsEnabled ? treatmentRouteName : Reflect.get(target, prop);
       }
-      return Reflect.get(flagIsControl ? target : treatmentRoute, prop);
+      return Reflect.get(flagIsEnabled ? treatmentRoute : target, prop);
     },
   };
 }
 
-export function setupFlaggedRoute(ControlRouteClass, { flagKey, enabledRouteName }) {
+export function setupFlaggedRoute(
+  ControlRouteClass,
+  { flagKey, enabledRouteName }
+) {
   if (navigator.userAgent.indexOf('MSIE') > -1) {
     return ControlRouteClass;
   }
@@ -42,5 +53,5 @@ export function setupFlaggedRoute(ControlRouteClass, { flagKey, enabledRouteName
         generateRouteHandler(owner, flagKey, enabledRouteName)
       );
     }
-  }
+  };
 }
