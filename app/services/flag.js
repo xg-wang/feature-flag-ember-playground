@@ -1,4 +1,5 @@
 import Service, { inject as service } from '@ember/service';
+import { STORE, getFlagIsEnabled } from '../lib/flag-cache';
 
 export default Service.extend({
   router: service('router'),
@@ -119,28 +120,6 @@ class FlagRef {
   update() {
     this._cache = STORE.get(this._key);
   }
-}
-
-// Operate global flags cache
-const STORE = new Map(
-  Object.entries(
-    JSON.parse(
-      decodeURI(document.querySelector('meta[name=feature-flags]').content)
-    ).flags
-  )
-);
-export function getFlag(key) {
-  return STORE.get(key) || 'control';
-}
-export function getFlagIsEnabled(key) {
-  return getFlag(key) !== 'control';
-}
-export function updateFlag(key) {
-  const newValue = STORE.get(key) + 1;
-  STORE.set(key, newValue);
-}
-export function setFlag(key, value) {
-  STORE.set(key, value);
 }
 
 const PARENT = '.parent';

@@ -1,3 +1,5 @@
+import { inject as service } from '@ember/service';
+
 const ROUTE_LIX_ENABLED_KEY = '__route_lix_is_enabled';
 
 function generateRouteHandler(owner, key, treatmentRouteName) {
@@ -42,16 +44,24 @@ export function setupFlaggedRoute(
   ControlRouteClass,
   { flagKey, enabledRouteName }
 ) {
-  if (navigator.userAgent.indexOf('MSIE') > -1) {
-    return ControlRouteClass;
-  }
-  return class FlagRoute extends ControlRouteClass {
+  return class extends ControlRouteClass {
+    @service fastboot;
     constructor(owner) {
       super(...arguments);
-      return new Proxy(
-        this,
-        generateRouteHandler(owner, flagKey, enabledRouteName)
-      );
+      if (this.fastboot.isFastBoot) {
+        console.log(this.fastboot.request.headers.get('User-Agent'));
+      }
+      const isIEInFastboot =
+        this.fastboot.isFastBoot &&
+        this.fastboot.request.headers.get('User-Agent').indexOf('MSIE') > -1;
+      const isIEInBrowser =
+        !this.fastboot.isFastBoot && navigator.userAgent.indexOf('MSIE') > -1;
+      if (!isIEInFastboot && !isIEInBrowser) {
+        return new Proxy(
+          this,
+          generateRouteHandler(owner, flagKey, enabledRouteName)
+        );
+      }
     }
   };
 }
