@@ -1,21 +1,22 @@
 import Component from '@glimmer/component';
-import { getFlag, updateFlag, setFlag } from '../lib/flag-cache';
 import { tracked } from '@glimmer/tracking';
 import { action } from '@ember/object';
+import { inject as service } from '@ember/service';
 
 export default class AllFlagsComponent extends Component {
-  @tracked applicationFlag = getFlag('application');
-  @tracked educationFlag = getFlag('education');
-  @tracked aFlag = getFlag('a');
-  @tracked bFlag = getFlag('b');
+  @service flag;
+  @tracked applicationFlag = this.flag.getFlag('application');
+  @tracked educationFlag = this.flag.getFlag('education');
+  @tracked aFlag = this.flag.getFlag('a');
+  @tracked bFlag = this.flag.getFlag('b');
   @action update(key) {
-    updateFlag(key);
-    this[key + 'Flag'] = getFlag(key);
-    console.log(`STORE[${key}] updated to ${getFlag(key)}`);
+    this.flag.updateFlag(key);
+    this[key + 'Flag'] = this.flag.getFlag(key);
+    console.log(`STORE[${key}] updated to ${this.flag.getFlag(key)}`);
   }
   @action setFlag(key, value) {
-    setFlag(key, value);
-    this[key + 'Flag'] = getFlag(key);
-    console.log(`STORE[${key}] updated to ${getFlag(key)}`);
+    this.flag.setFlag(key, value);
+    this[key + 'Flag'] = this.flag.getFlag(key);
+    console.log(`STORE[${key}] updated to ${this.flag.getFlag(key)}`);
   }
 }

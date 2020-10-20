@@ -1,10 +1,29 @@
 import Service, { inject as service } from '@ember/service';
-import { STORE, getFlagIsEnabled } from '../lib/flag-cache';
 
 export default Service.extend({
   router: service('router'),
   init() {
     this._super(...arguments);
+    this.FeatureFlags = Object.freeze({
+      flags: {
+        a: 0,
+        b: 0,
+        education: 'enabled',
+        application: 0,
+        'new.about': 'enabled',
+        'new.super-blog': 'enabled',
+      },
+      routingFlags: {
+        mountPoints: {
+          about: { key: 'new.about', enabledEngine: 'new-about' },
+          'super-blog': {
+            key: 'new.super-blog',
+            enabledEngine: 'new-super-blog',
+          },
+        },
+      },
+    });
+    this.STORE = new Map(Object.entries(this.FeatureFlags.flags));
     const topLevelFlagsManager = createFlagsManager();
     topLevelFlagsManager.resolve(
       new Map([
@@ -21,6 +40,7 @@ export default Service.extend({
       // application -> profile -> connections
       updateFlagsMapForRouteHierarchy(
         this.ROUTE_FLAGS_MAP,
+        this.STORE,
         toList,
         routePromises,
         pivot
@@ -35,15 +55,32 @@ export default Service.extend({
     return snapshot;
   },
   getFlag(key) {
-    return STORE.get(key);
+    return this.STORE.get(key) || 'control';
   },
   getFlagIsEnabled(key) {
-    return getFlagIsEnabled(key);
+    return this.getFlag(key) !== 'control';
+  },
+  updateFlag(key) {
+    const newValue = this.STORE.get(key) + 1;
+    this.STORE.set(key, newValue);
+  },
+  setFlag(key, value) {
+    this.STORE.set(key, value);
+  },
+  getFlagedEngine(engineMountPoint) {
+    const engineConfig = this.FeatureFlags.routingFlags.mountPoints[
+      engineMountPoint
+    ];
+    return {
+      enabled: this.FeatureFlags.flags[engineConfig.key] !== 'control',
+      enabledEngine: engineConfig.enabledEngine,
+    };
   },
 });
 
 async function updateFlagsMapForRouteHierarchy(
   routeFlagsMap,
+  store,
   toList,
   routePromises,
   pivot
@@ -80,7 +117,7 @@ async function updateFlagsMapForRouteHierarchy(
               !parentFlagsMap.get(TOP_LEVEL_FLAGS).has(f) &&
               !parentFlagsMap.get(INHERIT_FLAGS).has(f)
           )
-          .map((f) => [f, new FlagRef(f)]);
+          .map((f) => [f, new FlagRef(f, store.get(f))]);
         const inheritFlagsEntries = Array.from(
           parentFlagsMap.get(INHERIT_FLAGS).entries()
         ).concat(Array.from(parentFlagsMap.get(TOP_LEVEL_FLAGS).entries()));
@@ -102,7 +139,7 @@ async function updateFlagsMapForRouteHierarchy(
           .valueSync()
           .get(TOP_LEVEL_FLAGS)
           .values()) {
-          v.update();
+          v.update(store.get(v._key));
         }
       }
     }
@@ -110,15 +147,15 @@ async function updateFlagsMapForRouteHierarchy(
 }
 
 class FlagRef {
-  constructor(key) {
+  constructor(key, value) {
     this._key = key;
-    this._cache = STORE.get(key);
+    this._cache = value;
   }
   get value() {
     return this._cache;
   }
-  update() {
-    this._cache = STORE.get(this._key);
+  update(newValue) {
+    this._cache = newValue;
   }
 }
 

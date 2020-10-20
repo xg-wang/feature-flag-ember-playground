@@ -1,11 +1,13 @@
+import Ember from 'ember';
 import EmberRouter from '@embroider/router';
 import config from './config/environment';
-import { FeatureFlags } from './lib/flag-cache';
+import { getOwner } from '@ember/application';
 
-function mountFlagedEngine(/*this: DSLImpl*/engineMountPoint) {
-  const engineConfig = FeatureFlags.routingFlags.mountPoints[engineMountPoint];
-  if (FeatureFlags.flags[engineConfig.key] === 'enabled') {
-    this.mount(engineConfig.enabledEngine, { as: engineMountPoint });
+function mountFlagedEngine(/*this: DSLImpl*/ engineMountPoint) {
+  const { enabled, enabledEngine } = this.options.getFlagedEngine(engineMountPoint);
+  console.log(`enabledEngine: ${enabledEngine}`)
+  if (enabled) {
+    this.mount(enabledEngine, { as: engineMountPoint });
   } else {
     this.mount(engineMountPoint);
   }
@@ -14,6 +16,28 @@ function mountFlagedEngine(/*this: DSLImpl*/engineMountPoint) {
 export default class Router extends EmberRouter {
   location = config.locationType;
   rootURL = config.rootURL;
+
+  _buildDSL() {
+    let enableLoadingSubstates = this._hasModuleBasedResolver();
+    let router = this;
+    let owner = getOwner(this);
+    let options = {
+      enableLoadingSubstates,
+      resolveRouteMap(name) {
+        return owner.factoryFor(`route-map:${name}`);
+      },
+      addRouteForEngine(name, engineInfo) {
+        if (!router._engineInfoByRoute[name]) {
+          router._engineInfoByRoute[name] = engineInfo;
+        }
+      },
+      getFlagedEngine(engineMountPoint) {
+        return owner.lookup('service:flag').getFlagedEngine(engineMountPoint)
+      }
+    };
+
+    return new Ember.RouterDSL(null, options);
+  }
 }
 
 Router.map(function () {
