@@ -46,6 +46,15 @@ export default Service.extend({
         pivot
       );
     });
+    this.router.on('routeDidChange', ({ to }) => {
+      console.log(`Transitioning to route: ${to.name}`);
+      const maybeEngineName = to.name.split('.')[0];
+      for (const [name, config] of Object.entries(this.FeatureFlags.routingFlags.mountPoints)) {
+        if (maybeEngineName === name && this.FeatureFlags.flags[config.key] !== 'control') {
+        console.log(`Transitioning to an flag enabled engine: ${maybeEngineName}`);
+        }
+      }
+    });
   },
   // when get-route-info lands we can drop private API usage
   snapshotFromRouteName(routeName) {
